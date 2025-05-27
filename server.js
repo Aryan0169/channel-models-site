@@ -5,7 +5,7 @@ const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
 const multer = require("multer");
-const upload = multer({ dest: "temp_uploads/" });
+const upload = multer({ dest: "/tmp/" });
 
 const app = express();
 
@@ -142,6 +142,4 @@ app.delete("/api/models/:folder", isAuthenticated, (req, res) => {
   }
 });
 
-// ❌ DO NOT use app.listen for Vercel
-// ✅ Export the app for Vercel compatibility
 module.exports = app;
