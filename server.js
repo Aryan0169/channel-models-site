@@ -21,7 +21,7 @@ const users = {
 };
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+// app.use(express.static("public"));
 
 app.use(
   session({
