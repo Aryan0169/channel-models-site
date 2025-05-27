@@ -7,9 +7,7 @@ require("dotenv").config();
 const multer = require("multer");
 const upload = multer({ dest: "temp_uploads/" });
 
-
 const app = express();
-const PORT = 3000;
 
 const MODELS_DIR = path.join(__dirname, "models"); // secured models folder
 
@@ -70,23 +68,22 @@ app.get("/api/models", isAuthenticated, (req, res) => {
   const models = [];
 
   fs.readdirSync(MODELS_DIR).forEach(folder => {
-  const modelPath = path.join(MODELS_DIR, folder);
+    const modelPath = path.join(MODELS_DIR, folder);
 
-  // skip if it's not a directory (e.g., .DS_Store file)
-  if (!fs.lstatSync(modelPath).isDirectory()) return;
+    // skip if it's not a directory (e.g., .DS_Store file)
+    if (!fs.lstatSync(modelPath).isDirectory()) return;
 
-  const descPath = path.join(modelPath, "description.txt");
-  let description = "No description available";
+    const descPath = path.join(modelPath, "description.txt");
+    let description = "No description available";
 
-  if (fs.existsSync(descPath)) {
-    description = fs.readFileSync(descPath, "utf-8").split("\n")[0];
-  }
+    if (fs.existsSync(descPath)) {
+      description = fs.readFileSync(descPath, "utf-8").split("\n")[0];
+    }
 
-  const files = fs.readdirSync(modelPath).filter(file => file !== "description.txt");
+    const files = fs.readdirSync(modelPath).filter(file => file !== "description.txt");
 
-  models.push({ name: folder.replace(/_/g, " "), dir: folder, description, files });
-});
-
+    models.push({ name: folder.replace(/_/g, " "), dir: folder, description, files });
+  });
 
   res.json(models);
 });
@@ -128,11 +125,6 @@ app.post("/upload-model", isAuthenticated, upload.array("files"), (req, res) => 
   res.redirect("/models");
 });
 
-
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
 app.delete("/api/models/:folder", isAuthenticated, (req, res) => {
   const modelFolder = req.params.folder;
   const fullPath = path.join(__dirname, "models", modelFolder);
@@ -149,3 +141,7 @@ app.delete("/api/models/:folder", isAuthenticated, (req, res) => {
     res.status(404).send("Model not found.");
   }
 });
+
+// ❌ DO NOT use app.listen for Vercel
+// ✅ Export the app for Vercel compatibility
+module.exports = app;
