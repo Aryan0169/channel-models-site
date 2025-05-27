@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Channel Models</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="model-heading">
+      <h2>Channel Models</h2>
+      <a href="/dashboard">← Back to Dashboard</a>
+    </div>
+
+    <h3>Add New Channel Model</h3>
+    <form id="uploadForm" enctype="multipart/form-data" method="POST" action="/upload-model">
+      <input type="text" name="modelName" placeholder="Model Name" required><br>
+      <input type="file" name="files" multiple required><br><br>
+      <button type="submit">Upload Model</button>
+    </form>
+
+    <hr/>
+    <div id="models-list"></div>
+  </div>
+
+  <script>
+    function fetchModels() {
+      fetch('/api/models')
+        .then(res => res.json())
+        .then(models => {
+          const list = document.getElementById('models-list');
+          list.innerHTML = '';
+          models.forEach(model => {
+            const div = document.createElement('div');
+            div.className = 'model-entry';
+
+            const links = model.files.map(file => {
+              return `<a href="/api/models/${model.dir}/${file}" download>${file}</a>`;
+            }).join(' | ');
+
+            div.innerHTML = `
+              <h3>${model.name}</h3>
+              <p><strong>Description:</strong> ${model.description}</p>
+              ${links}
+              <br/>
+              <button onclick="deleteModel('${model.dir}')">🗑 Delete</button>
+              <hr/>
+            `;
+            list.appendChild(div);
+          });
+        })
+        .catch(err => {
+          document.getElementById('models-list').innerHTML = "<p>Error loading models.</p>";
+          console.error(err);
+        });
+    }
+
+    function deleteModel(folder) {
+      if (confirm(`Are you sure you want to delete model "${folder}"?`)) {
+        fetch(`/api/models/${folder}`, { method: 'DELETE' })
+          .then(res => res.text())
+          .then(msg => {
+            alert(msg);
+            fetchModels(); // Refresh list
+          })
+          .catch(err => {
+            alert('Error deleting model.');
+            console.error(err);
+          });
+      }
+    }
+
+    // Load models on page load
+    fetchModels();
+  </script>
+</body>
+</html>

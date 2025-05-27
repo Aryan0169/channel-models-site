@@ -1,0 +1,41 @@
+# macOS system files
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Environment variables
+.env
+
+# IDE config
+.vscode/
+.idea/
+*.swp
+
+# Runtime/cache
+.cache/
+tmp/
+uploads/
+temp_uploads/
+
+# Build output
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Compiled TS
+*.tsbuildinfo
+
+# MATLAB temporary files
+*.asv
+*.bak
