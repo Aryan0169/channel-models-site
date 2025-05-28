@@ -1,1 +1,0 @@
-Multicluster Fluctuating Two Ray Fading Model, <a href = "https://ieeexplore.ieee.org/document/10268918" target = "_blank"> Cite This </a> 
