@@ -85,13 +85,15 @@
 
       try {
         for (const file of files) {
+          const contentType = file.type || "application/octet-stream";
+
           const res = await fetch("/api/get-signed-url", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               modelName,
               fileName: file.name,
-              contentType: file.type
+              contentType
             }),
           });
 
@@ -100,7 +102,7 @@
 
           const uploadRes = await fetch(signedUrl, {
             method: "PUT",
-            headers: { "Content-Type": file.type },
+            headers: { "Content-Type": contentType },
             body: file,
           });
 
