@@ -6,9 +6,14 @@ const fs = require("fs");
 require("dotenv").config();
 const multer = require("multer");
 const upload = multer({ dest: "/tmp/" });
-const bucket = require('./gcs');
+const { v4: uuidv4 } = require("uuid");
+
+const bucket = require("./gcs");
 
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Needed for JSON body parsing
+app.use(express.static(path.join(__dirname, "public")));
 
 const commonHash = "$2b$10$fZ9fqFsySFL/.45WwxRtLO3XtNZxJnXNX/qqwfUgZWcAdTDHWYWP6";
 
@@ -16,17 +21,14 @@ const users = {
   Akash: { username: "Akash", passwordHash: commonHash },
   Aryan: { username: "Aryan", passwordHash: commonHash },
   Isha: { username: "Isha", passwordHash: commonHash },
-  guest: { username: "guest", passwordHash: commonHash }
+  guest: { username: "guest", passwordHash: commonHash },
 };
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "defaultSecret",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   })
 );
 
@@ -68,34 +70,35 @@ app.get("/user", isAuthenticated, (req, res) => {
   res.json({ username: req.session.user });
 });
 
-// Upload model to Google Cloud Storage
-app.post("/upload-model", isAuthenticated, upload.array("files"), async (req, res) => {
-  const modelName = req.body.modelName.trim().replace(/\s+/g, "_");
+// ✅ NEW: Generate Signed URL for direct upload
+app.post("/api/get-signed-url", isAuthenticated, async (req, res) => {
+  const { modelName, fileName, contentType } = req.body;
 
   try {
-    const uploads = req.files.map(file => {
-      const destination = `${modelName}/${file.originalname}`;
-      return bucket.upload(file.path, {
-        destination
-      });
+    const destination = `${modelName}/${fileName}`;
+    const file = bucket.file(destination);
+    const [url] = await file.getSignedUrl({
+      version: "v4",
+      action: "write",
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      contentType: contentType || "application/octet-stream",
     });
 
-    await Promise.all(uploads);
-    res.redirect("/models");
+    res.json({ url });
   } catch (err) {
-    console.error("Upload error:", err);
-    res.status(500).send("Upload failed.");
+    console.error("Signed URL error:", err);
+    res.status(500).json({ error: "Failed to get signed URL" });
   }
 });
 
 
-// List all models from GCS
+// ✅ List all models from GCS
 app.get("/api/models", isAuthenticated, async (req, res) => {
   try {
     const [files] = await bucket.getFiles();
     const models = {};
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const [folder, fileName] = file.name.split("/", 2);
       if (!models[folder]) models[folder] = [];
       if (fileName) models[folder].push(file.name);
@@ -105,7 +108,7 @@ app.get("/api/models", isAuthenticated, async (req, res) => {
       name: folder.replace(/_/g, " "),
       dir: folder,
       description: "Stored on GCS",
-      files: files.map(file => file.split("/")[1])
+      files: files.map((file) => file.split("/")[1]),
     }));
 
     res.json(response);
@@ -115,7 +118,7 @@ app.get("/api/models", isAuthenticated, async (req, res) => {
   }
 });
 
-// Download individual file from GCS
+// ✅ Download individual file from GCS
 app.get("/api/models/:folder/:file", isAuthenticated, async (req, res) => {
   const { folder, file } = req.params;
   const remoteFile = bucket.file(`${folder}/${file}`);
@@ -137,23 +140,19 @@ app.delete("/api/models/:folder", isAuthenticated, async (req, res) => {
   const { folder } = req.params;
 
   try {
-    // List all files in the folder
     const [files] = await bucket.getFiles({ prefix: `${folder}/` });
 
     if (files.length === 0) {
       return res.status(404).send("No files found in this model folder.");
     }
 
-    // Delete all files
-    await Promise.all(files.map(file => file.delete()));
-
+    await Promise.all(files.map((file) => file.delete()));
     res.status(200).send("Model folder deleted successfully.");
   } catch (err) {
     console.error("Delete error:", err);
     res.status(500).send("Failed to delete model.");
   }
 });
-
 
 // Logout
 app.get("/logout", (req, res) => {
@@ -165,7 +164,7 @@ app.get("/logout", (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
+  console.log(`✅ Server started on http://localhost:${PORT}`);
 });
 
 module.exports = app;

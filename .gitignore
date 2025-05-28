@@ -39,4 +39,6 @@ coverage/
 # MATLAB temporary files
 *.asv
 *.bak
+
+# JSON files
 speedy-rhino-461119-f4-633794e02bc9.json
