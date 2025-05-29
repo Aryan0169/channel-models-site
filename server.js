@@ -132,6 +132,11 @@ app.post("/admin/users/add", requireSuperuser, async (req, res) => {
 // Delete a user (Superuser only)
 app.post("/admin/users/delete", requireSuperuser, async (req, res) => {
   const { username } = req.body;
+
+  if (username === req.session.user.username) {
+    return res.status(403).send("You cannot delete your own account.");
+  }
+
   try {
     await pool.query("DELETE FROM users WHERE username = $1", [username]);
     res.send("User deleted.");
