@@ -17,12 +17,21 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const commonHash = "$2b$10$fZ9fqFsySFL/.45WwxRtLO3XtNZxJnXNX/qqwfUgZWcAdTDHWYWP6";
 
-const users = {
-  Akash: { username: "Akash", passwordHash: commonHash },
-  Aryan: { username: "Aryan", passwordHash: commonHash },
-  Isha: { username: "Isha", passwordHash: commonHash },
-  guest: { username: "guest", passwordHash: commonHash },
-};
+function requireSuperuser(req, res, next) {
+  if (req.session.user && req.session.user.isSuperuser) {
+    next();
+  } else {
+    res.status(403).send("Access denied: Superusers only.");
+  }
+}
+
+
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
 app.use(
   session({
@@ -42,16 +51,32 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Login
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = users[username];
 
-  if (user && (await bcrypt.compare(password, user.passwordHash))) {
-    req.session.user = username;
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.send("Invalid credentials. <a href='/'>Try again</a>");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.send("Invalid credentials. <a href='/'>Try again</a>");
+    }
+
+    req.session.user = {
+    username: user.username,
+    isSuperuser: user.role === "admin",
+  };
+
+
     res.redirect("/dashboard");
-  } else {
-    res.send("Invalid credentials. <a href='/'>Try again</a>");
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).send("Internal server error");
   }
 });
 
@@ -60,6 +85,90 @@ app.get("/dashboard", isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
+// View all users (Superuser only)
+app.get("/admin/users", requireSuperuser, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT username, role FROM users");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Add a new user (Superuser only) with default password 'test123'
+app.post("/admin/users/add", requireSuperuser, async (req, res) => {
+  const { username, isSuperuser } = req.body;
+
+  if (!username) {
+    return res.status(400).send("Username is required.");
+  }
+
+  try {
+    const defaultPassword = "test123";
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+    const role = isSuperuser ? "admin" : "user";
+
+    // Check if the username already exists
+    const existingUser = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    if (existingUser.rows.length > 0) {
+      return res.status(409).send("User already exists.");
+    }
+
+    await pool.query(
+      "INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)",
+      [username, passwordHash, role]
+    );
+
+    res.status(201).send(`User added successfully as ${role} with default password.`);
+  } catch (err) {
+    console.error("Error adding user:", err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+
+// Delete a user (Superuser only)
+app.post("/admin/users/delete", requireSuperuser, async (req, res) => {
+  const { username } = req.body;
+  try {
+    await pool.query("DELETE FROM users WHERE username = $1", [username]);
+    res.send("User deleted.");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Update password
+app.post("/update-password", isAuthenticated, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).send("Both current and new passwords are required.");
+  }
+
+  try {
+    const result = await pool.query("SELECT password_hash FROM users WHERE username = $1", [req.session.user.username]);
+    const user = result.rows[0];
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      return res.status(401).send("Current password is incorrect.");
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await pool.query("UPDATE users SET password_hash = $1 WHERE username = $2", [newHash, req.session.user.username]);
+
+    res.send("Password updated successfully.");
+  } catch (err) {
+    console.error("Password update error:", err);
+    res.status(500).send("Failed to update password.");
+  }
+});
+
+
+
 // Models UI
 app.get("/models", isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "models.html"));
@@ -67,7 +176,10 @@ app.get("/models", isAuthenticated, (req, res) => {
 
 // User info
 app.get("/user", isAuthenticated, (req, res) => {
-  res.json({ username: req.session.user });
+  res.json({
+  username: req.session.user.username,
+  isSuperuser: req.session.user.isSuperuser
+});
 });
 
 // ✅ NEW: Generate Signed URL for direct upload

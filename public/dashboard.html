@@ -9,22 +9,142 @@
 <body>
   <div class="dashboard-container">
     <h2 id="welcome-message">Welcome</h2>
+
     <div class="nav-links">
       <a href="/models">Access Channel Models</a>
       <a href="/logout">Logout</a>
     </div>
+
     <div class="content">
       <p>This is your secure dashboard. You can manage channel models and more.</p>
     </div>
+
+    <!-- Change Password Section -->
+    <button id="toggle-password-form">Change Password</button>
+    <div class="change-password" id="password-form-section" style="display: none;">
+      <h3>Change Password</h3>
+      <form id="change-password-form">
+        <div>
+          <input type="password" name="currentPassword" id="currentPassword" placeholder="Current Password" required />
+        </div>
+        <div>
+          <input type="password" name="newPassword" id="newPassword" placeholder="New Password" required />
+        </div>
+        <div class="toggle-password-container">
+          <input type="checkbox" id="togglePassword" />
+          <label for="togglePassword">Show Passwords</label>
+        </div>
+        <button type="submit">Update Password</button>
+      </form>
+      <p id="password-update-status"></p>
+    </div>
+
+    <!-- Admin Panel Toggle Button -->
+<div id="admin-section" style="display: none;">
+  <h3>Admin Panel</h3>
+  <button class="blue-btn" onclick="toggleAdminPanel()">Add New User</button>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" style="display: none;">
+    <div class="admin-panel">
+      <h4>Add New User</h4>
+      <form id="addUserForm">
+        <input type="text" id="newUsername" placeholder="Enter new username" required />
+        <div class="isadmincheck">
+          <input type="checkbox" id="isSuperuser" />
+          <label for="isSuperuser" style="margin-left: 8px;">Is Admin?</label>
+        </div>
+        <button type="submit" class="green-btn">Confirm</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Users -->
+  <button id="manageUsersBtn" style="margin-top: 1rem;">Manage Existing Users</button>
+
+  <div id="manageUsersPanel" style="display: none; margin-top: 1rem;">
+    <h3>User List</h3>
+    <table id="userTable" border="1">
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Username</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="deleteUsersBtn" style="margin-top: 0.5rem;">Delete Selected Users</button>
+    <div id="manageUserMessage" style="margin-top: 0.5rem;"></div>
+  </div>
+</div>
+
   </div>
 
   <script>
-    // Optional: personalize with username
+    // Show user welcome
     fetch('/user')
       .then(res => res.json())
       .then(data => {
         document.getElementById("welcome-message").textContent = `Welcome, ${data.username}`;
       });
+
+    // Toggle password form
+    document.getElementById("toggle-password-form").addEventListener("click", () => {
+      const section = document.getElementById("password-form-section");
+      section.style.display = section.style.display === "none" ? "block" : "none";
+    });
+
+    // Toggle password visibility
+    document.getElementById("togglePassword").addEventListener("change", function () {
+      const type = this.checked ? "text" : "password";
+      document.getElementById("currentPassword").type = type;
+      document.getElementById("newPassword").type = type;
+    });
+
+    // Handle password form submit
+    document.getElementById("change-password-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const currentPassword = this.currentPassword.value;
+      const newPassword = this.newPassword.value;
+      const statusElement = document.getElementById("password-update-status");
+
+      statusElement.textContent = "Updating...";
+      statusElement.className = "updating-message";
+
+      try {
+        const response = await fetch("/update-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        const text = await response.text();
+
+        if (response.ok) {
+          statusElement.textContent = text;
+          statusElement.className = "success-message";
+          this.reset();
+          document.getElementById("currentPassword").type = "password";
+          document.getElementById("newPassword").type = "password";
+          document.getElementById("togglePassword").checked = false;
+        } else {
+          statusElement.textContent = text;
+          statusElement.className = "error-message";
+        }
+      } catch (err) {
+        statusElement.textContent = "An error occurred. Please try again.";
+        statusElement.className = "error-message";
+      }
+    });
+
+    // Toggle Admin Panel
+    function toggleAdminPanel() {
+      const panel = document.getElementById("adminPanel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    }
   </script>
+
+  <script src="/dashboard.js"></script>
 </body>
 </html>

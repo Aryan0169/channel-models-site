@@ -25,20 +25,13 @@ input {
   border-radius: 6px;
 }
 
-.show-password {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  text-align: left;
-  margin-top: 10px;
-  font-size: 0.8em;
-  color: #444;
-  padding-left: 10px;
-}
-
-#togglePassword{
-  width:fit-content;
-  margin-right: 2%;
+input[type="text"],
+input[type="password"] {
+  padding: 8px;
+  margin: 5px 0;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
 }
 
 button {
@@ -56,14 +49,7 @@ button:hover {
   background-color: #005fa3;
 }
 
-#error-message {
-  color: red;
-  font-size: 0.85em;
-  margin-top: 8px;
-}
-
 .dashboard-container {
-  /* max-width: 600px; */
   margin: auto;
   background-color: #fff;
   padding: 30px;
@@ -71,28 +57,6 @@ button:hover {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   text-align: center;
   font-size: 1.5vb;
-  /* display: flex; */
-}
-
-/* .dashboard-container2 { */
-  /* max-width: 600px; */
-  /* margin: auto;
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  display: flex; */
-/* } */
-.model-heading{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.model-heading a{
-  margin-right: 0px;
-  margin-left: auto;
 }
 
 .nav-links a {
@@ -109,14 +73,158 @@ button:hover {
   background-color: #003c6b;
 }
 
+.model-heading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.model-heading a {
+  margin-left: auto;
+}
+
 .model-entry {
   background-color: #f9f9f9;
   padding: 15px;
   border-radius: 10px;
   margin: 15px 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  font-size:2vb;
+  font-size: 2vb;
 }
+
 .model-entry a {
   margin-right: 8px;
+}
+
+.change-password,
+#admin-controls {
+  margin-top: 20px;
+}
+
+.toggle-password-container {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.show-password {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  margin-top: 10px;
+  font-size: 0.8em;
+  color: #444;
+  padding-left: 10px;
+}
+
+#togglePassword {
+  width: fit-content;
+  margin-right: 2%;
+}
+
+#error-message {
+  color: red;
+  font-size: 0.85em;
+  margin-top: 8px;
+}
+
+#admin-action-status,
+#password-update-status {
+  margin-top: 10px;
+  color: green;
+}
+
+.success-message {
+  color: green;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.updating-message {
+  color: #555;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+#admin-section {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  max-width: 400px;
+  background-color: #f9f9f9;
+}
+
+.add-user-box h3 {
+  margin-bottom: 10px;
+}
+
+#addUserForm {
+  display: flex;
+  flex-direction: column;
+  /* gap: 10px; */
+}
+
+#addUserForm input[type="text"] {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#addUserForm button {
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#addUserForm button:hover {
+  background-color: #45a049;
+}
+
+#addUserMessage {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.isadmincheck{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+#isSuperuser{
+  width: fit-content;
+  margin-right: 2%;
+}
+
+.admin-panel{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+#manageUsersPanel{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+#userTable{
+  align-items: center;
+  align-self: center;
+  justify-self: center;
 }
