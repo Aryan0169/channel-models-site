@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const res = await fetch("/user");
   const data = await res.json();
 
+  // Store current username globally
+  window.currentUsername = data.username;
+
   // Show welcome message
   document.getElementById("welcome-message").textContent = `Welcome, ${data.username}`;
 
@@ -17,13 +20,11 @@ function toggleAdminPanel() {
   panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
 
-// Add User functionality
+// Add User functionality (unchanged)
 document.getElementById("addUserForm").addEventListener("submit", async function (e) {
   e.preventDefault();
-
   const username = document.getElementById("newUsername").value;
   const isSuperuser = document.getElementById("isSuperuser").checked;
-  const messageEl = document.getElementById("addUserMessage");
 
   try {
     const res = await fetch("/admin/users/add", {
@@ -36,52 +37,61 @@ document.getElementById("addUserForm").addEventListener("submit", async function
 
     const text = await res.text();
     alert(text);
-
-    if (res.ok) {
-      document.getElementById("addUserForm").reset();
-    }
+    if (res.ok) this.reset();
   } catch (err) {
     console.error("Error adding user:", err);
     alert("Something went wrong.");
   }
 });
 
-// Manage Users panel display and delete functionality
-document.getElementById("manageUsersBtn").addEventListener("click", async () => {
-  const panel = document.getElementById("manageUsersPanel");
+
+// ✅ Updated logic to fetch and display users (with self checkbox disabled)
+async function loadUserTable() {
   const userTableBody = document.querySelector("#userTable tbody");
   const messageEl = document.getElementById("manageUserMessage");
 
+  try {
+    const res = await fetch("/admin/users");
+    if (!res.ok) throw new Error("Failed to fetch users");
+    const users = await res.json();
+
+    userTableBody.innerHTML = "";
+
+    users.forEach(user => {
+      const isSelf = user.username === window.currentUsername;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>
+          <input type="checkbox" class="user-checkbox" value="${user.username}" ${isSelf ? "disabled" : ""}>
+        </td>
+        <td>${user.username}</td>
+        <td>${user.role}</td>
+      `;
+      userTableBody.appendChild(row);
+    });
+
+    messageEl.textContent = "";
+  } catch (err) {
+    console.error("Error loading users:", err);
+    messageEl.style.color = "red";
+    messageEl.textContent = "Failed to load users.";
+  }
+}
+
+
+// Toggle Manage Users Panel
+document.getElementById("manageUsersBtn").addEventListener("click", async () => {
+  const panel = document.getElementById("manageUsersPanel");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
 
   if (panel.style.display === "block") {
-    try {
-      const res = await fetch("/admin/users");
-      if (!res.ok) throw new Error("Failed to fetch users");
-      const users = await res.json();
-
-      userTableBody.innerHTML = "";
-
-      users.forEach(user => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td><input type="checkbox" class="user-checkbox" value="${user.username}"></td>
-          <td>${user.username}</td>
-          <td>${user.role}</td>
-        `;
-        userTableBody.appendChild(row);
-      });
-
-      messageEl.textContent = "";
-    } catch (err) {
-      console.error("Error loading users:", err);
-      messageEl.style.color = "red";
-      messageEl.textContent = "Failed to load users.";
-    }
+    await loadUserTable(); // ✅ Load users only if opening
   }
 });
 
-// Delete selected users
+
+// ✅ Delete selected users, then refresh table without closing panel
 document.getElementById("deleteUsersBtn").addEventListener("click", async () => {
   const checkboxes = document.querySelectorAll(".user-checkbox:checked");
   const usernames = Array.from(checkboxes).map(cb => cb.value);
@@ -120,6 +130,5 @@ document.getElementById("deleteUsersBtn").addEventListener("click", async () => 
   messageEl.style.color = "black";
   messageEl.textContent = `${successCount} user(s) deleted. ${failureCount > 0 ? failureCount + " failed." : ""}`;
 
-  // Refresh table
-  document.getElementById("manageUsersBtn").click();
+  await loadUserTable(); // ✅ Just refresh the list, don't toggle panel
 });
