@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="dashboard-container">
-    <h2 id="welcome-message">Welcome</h2>
+    <h1 id="welcome-message">Welcome</h1>
 
     <div class="nav-links">
-      <a href="/models">Access Channel Models</a>
+      <a href="/models">Access Project Codes</a>
       <a href="/logout">Logout</a>
     </div>
 
     <div class="content">
-      <p>This is your secure dashboard. You can manage channel models and more.</p>
+      <p>This is your secure dashboard. You can access the codes the code for various projects and add yours as well.
+      </p>
     </div>
 
     <!-- Change Password Section -->
@@ -40,44 +43,44 @@
     </div>
 
     <!-- Admin Panel Toggle Button -->
-<div id="admin-section" style="display: none;">
-  <h3>Admin Panel</h3>
-  <button class="blue-btn" onclick="toggleAdminPanel()">Add New User</button>
+    <div id="admin-section" style="display: none;">
+      <h2>Admin Panel</h2>
+      <button class="blue-btn" onclick="toggleAdminPanel()">Add New User</button>
 
-  <!-- Admin Panel -->
-  <div id="adminPanel" style="display: none;">
-    <div class="admin-panel">
-      <h4>Add New User</h4>
-      <form id="addUserForm">
-        <input type="text" id="newUsername" placeholder="Enter new username" required />
-        <div class="isadmincheck">
-          <input type="checkbox" id="isSuperuser" />
-          <label for="isSuperuser" style="margin-left: 8px;">Is Admin?</label>
+      <!-- Admin Panel -->
+      <div id="adminPanel" style="display: none;">
+        <div class="admin-panel">
+          <h4>Add New User</h4>
+          <form id="addUserForm">
+            <input type="text" id="newUsername" placeholder="Enter new username" required />
+            <div class="isadmincheck">
+              <input type="checkbox" id="isSuperuser" />
+              <label for="isSuperuser" style="margin-left: 8px;">Is Admin?</label>
+            </div>
+            <button type="submit" class="green-btn">Confirm</button>
+          </form>
         </div>
-        <button type="submit" class="green-btn">Confirm</button>
-      </form>
+      </div>
+
+      <!-- Manage Users -->
+      <button id="manageUsersBtn" style="margin-top: 1rem;">Manage Existing Users</button>
+
+      <div id="manageUsersPanel" style="display: none; margin-top: 1rem;">
+        <h3>User List</h3>
+        <table id="userTable" border="1">
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Username</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button id="deleteUsersBtn" style="margin-top: 0.5rem;">Delete Selected Users</button>
+        <div id="manageUserMessage" style="margin-top: 0.5rem;"></div>
+      </div>
     </div>
-  </div>
-
-  <!-- Manage Users -->
-  <button id="manageUsersBtn" style="margin-top: 1rem;">Manage Existing Users</button>
-
-  <div id="manageUsersPanel" style="display: none; margin-top: 1rem;">
-    <h3>User List</h3>
-    <table id="userTable" border="1">
-      <thead>
-        <tr>
-          <th>Select</th>
-          <th>Username</th>
-          <th>Role</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button id="deleteUsersBtn" style="margin-top: 0.5rem;">Delete Selected Users</button>
-    <div id="manageUserMessage" style="margin-top: 0.5rem;"></div>
-  </div>
-</div>
 
   </div>
 
@@ -88,39 +91,37 @@
       .then(data => {
         document.getElementById("welcome-message").textContent = `Welcome, ${data.username}`;
       });
-
     // Toggle password form
     document.getElementById("toggle-password-form").addEventListener("click", () => {
       const section = document.getElementById("password-form-section");
       section.style.display = section.style.display === "none" ? "block" : "none";
     });
-
     // Toggle password visibility
-    document.getElementById("togglePassword").addEventListener("change", function () {
+    document.getElementById("togglePassword").addEventListener("change", function() {
       const type = this.checked ? "text" : "password";
       document.getElementById("currentPassword").type = type;
       document.getElementById("newPassword").type = type;
     });
-
     // Handle password form submit
-    document.getElementById("change-password-form").addEventListener("submit", async function (e) {
+    document.getElementById("change-password-form").addEventListener("submit", async function(e) {
       e.preventDefault();
       const currentPassword = this.currentPassword.value;
       const newPassword = this.newPassword.value;
       const statusElement = document.getElementById("password-update-status");
-
       statusElement.textContent = "Updating...";
       statusElement.className = "updating-message";
-
       try {
         const response = await fetch("/update-password", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentPassword, newPassword }),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword
+          }),
         });
-
         const text = await response.text();
-
         if (response.ok) {
           statusElement.textContent = text;
           statusElement.className = "success-message";
@@ -137,7 +138,6 @@
         statusElement.className = "error-message";
       }
     });
-
     // Toggle Admin Panel
     function toggleAdminPanel() {
       const panel = document.getElementById("adminPanel");
@@ -147,4 +147,5 @@
 
   <script src="/dashboard.js"></script>
 </body>
+
 </html>

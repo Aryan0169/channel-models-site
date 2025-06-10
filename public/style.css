@@ -1,6 +1,63 @@
+/* MabryPro-Regular */
+@font-face {
+  font-family: 'Mabry Pro';
+  src: url('fonts/MabryPro-Regular.ttf') format('truetype'); 
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* MabryPro-Bold */
+@font-face {
+  font-family: 'Mabry Pro';
+  src: url('fonts/MabryPro-Bold.ttf') format('truetype');
+  font-weight: bold; /* or 700 */
+  font-style: normal;
+  font-display: swap;
+}
+
+/* MabryPro-Italic */
+@font-face {
+  font-family: 'Mabry Pro';
+  src: url('fonts/MabryPro-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* MabryPro-BlackItalic */
+@font-face {
+  font-family: 'Mabry Pro';
+  src: url('fonts/MabryPro-BlackItalic.ttf') format('truetype');
+  font-weight: 900; /* Or appropriate weight for 'Black' */
+  font-style: italic;
+  font-display: swap;
+}
+
+/* MabryPro-Light */
+@font-face {
+  font-family: 'Mabry Pro';
+  src: url('fonts/MabryPro-Light.ttf') format('truetype');
+  font-weight: 300; /* or 'light' */
+  font-style: normal;
+  font-display: swap;
+}
+
+img{
+  width: 80vh;
+  margin-right: 5%;
+  display: block;
+}
+
+@media screen and (orientation: portrait) {
+  img {
+    display: none; /* Hide the image */
+  }
+}
+
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #eef2f5;
+  font-family: 'Mabry Pro', sans-serif;
+  background-color: #E9F2FF;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,12 +66,17 @@ body {
 }
 
 .login-container {
-  background-color: #fff;
+  background-color: #D2DFFF;
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 300px;
+  height: 40%;
+  /* width: 300px; */
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 input {
@@ -23,6 +85,13 @@ input {
   margin: 8px 0;
   border: 1px solid #ccc;
   border-radius: 6px;
+}
+
+input::placeholder {
+  /* font-weight: normal; */
+  font-family: 'Mabry Pro';
+  opacity: 0.7;
+  /* color: red; */
 }
 
 input[type="text"],
@@ -37,7 +106,7 @@ input[type="password"] {
 button {
   width: 95%;
   padding: 10px;
-  background-color: #0077cc;
+  background-color: #454DD8;
   color: white;
   border: none;
   border-radius: 6px;
@@ -46,12 +115,28 @@ button {
 }
 
 button:hover {
-  background-color: #005fa3;
+  background-color: #1c2684;
+  color: #fff;
+  /* transition: width 2s; */
 }
 
 .dashboard-container {
   margin: auto;
-  background-color: #fff;
+  background-color: #D2DFFF;
+  /* padding: 30px 10px 20px 10px; */
+  padding-bottom: 3%;
+  padding-top: 2%;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  font-size: 1.5vb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dashboard-container2 {
+  margin: auto;
+  background-color: #D2DFFF;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
@@ -60,17 +145,29 @@ button:hover {
 }
 
 .nav-links a {
+
+  /* width: 95%; */
+  /* padding: 10px; */
+  /* background-color: #454DD8; */
+  /* color: white; */
+  /* border: none; */
+  /* border-radius: 6px; */
+  /* cursor: pointer; */
+  /* margin-top: 10px; */
+
+  /* width: 90%; */
   display: inline-block;
-  margin: 0 10px;
-  padding: 10px 15px;
+  margin: 0 15px;
+  padding: 10px;
   color: white;
-  background-color: #0077cc;
+  background-color: #454DD8;
   border-radius: 6px;
   text-decoration: none;
+  font-size: 1.5vb
 }
 
 .nav-links a:hover {
-  background-color: #003c6b;
+  background-color: #1c2684;
 }
 
 .model-heading {
@@ -84,7 +181,7 @@ button:hover {
 }
 
 .model-entry {
-  background-color: #f9f9f9;
+  background-color: #e9f2ff;
   padding: 15px;
   border-radius: 10px;
   margin: 15px 0;
@@ -99,11 +196,13 @@ button:hover {
 .change-password,
 #admin-controls {
   margin-top: 20px;
+  width: 50%;
 }
 
 .toggle-password-container {
   margin: 10px 0;
   font-size: 14px;
+  font-family: 'Mabry Pro';
 }
 
 .show-password {
@@ -122,10 +221,21 @@ button:hover {
   margin-right: 2%;
 }
 
+.content{
+  width: 53%;
+}
+#toggle-password-form{
+  width: 40%;
+}
+
 #error-message {
   color: red;
   font-size: 0.85em;
   margin-top: 8px;
+}
+
+#welcome-message{
+  font-size: xx-large;
 }
 
 #admin-action-status,
@@ -155,10 +265,10 @@ button:hover {
 #admin-section {
   margin-top: 30px;
   padding: 20px;
-  border: 1px solid #ddd;
+  border: 0.5px solid #696969;
   border-radius: 10px;
-  max-width: 400px;
-  background-color: #f9f9f9;
+  width: 350px;
+  background-color: #e9f2ff;
 }
 
 .add-user-box h3 {
